@@ -2,10 +2,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ShoppingCart, Search, Menu, X, User } from "lucide-react";
+import { useCartStore } from "@/store/cartStore";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const totalItems = useCartStore((state) => state.getTotalItems());
 
   const categories = [
     { name: "Clothing", href: "/products?category=clothing" },
@@ -21,7 +23,8 @@ export default function Navbar() {
         
         {/* LOGO */}
         <Link href="/" className="text-2xl font-bold text-orange-500 shrink-0">
-          Buyo<span className="text-black">.ng</span>
+          Buyo
+          {/* <span className="text-black">.ng</span> */}
         </Link>
 
         {/* SEARCH BAR - hidden on mobile */}
@@ -52,7 +55,7 @@ export default function Navbar() {
             <ShoppingCart size={24} />
             {/* Cart count badge */}
             <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              0
+              {totalItems}
             </span>
           </Link>
 

@@ -57,6 +57,24 @@
     rating: 4.7,
     reviews: 89,
   },
+  {
+    id: "7",
+    name: "Matte Red Lipstick",
+    price: 6500,
+    category: "cosmetics",
+    emoji: "💄",
+    rating: 4.8,
+    review: 78,
+  },
+  {
+    id: "8",
+    name: "Knife Set (6 piece)",
+    price: 18000,
+    category: "kitchen",
+    emoji: "🔪",
+    rating: 4.6,
+    reviews: 37,
+  },
  ];
 
    // Helper to format price in Naira
