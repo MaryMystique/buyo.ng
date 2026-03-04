@@ -1,36 +1,42 @@
 import Link from "next/link";
+import Image from "next/image";
+import ProductImage from "@/components/ui/ProductImage";
 
 const categories = [
   {
     name: "Clothing",
     href: "/products?category=clothing",
+    image: "/products/clo.jpg",
     emoji: "👗",
-    bg: "bg-pink-100",
     text: "text-pink-600",
+    bg: "bg-pink-50",
     description: "Trendy styles for everyone",
   },
   {
     name: "Appliances",
     href: "/products?category=appliances",
+    image: "/products/app.jpg",
     emoji: "🔌",
-    bg: "bg-blue-100",
     text: "text-blue-600",
+    bg: "bg-blue-50",
     description: "Power your home",
   },
   {
     name: "Kitchen",
     href: "/products?category=kitchen",
+    image: "/products/kit.jpg",
     emoji: "🍳",
-    bg: "bg-yellow-100",
     text: "text-yellow-600",
+    bg: "bg-yellow-50",
     description: "Cook with the best tools",
   },
   {
     name: "Cosmetics",
     href: "/products?category=cosmetics",
+    image: "/products/cos2.jpg",
     emoji: "💄",
-    bg: "bg-purple-100",
     text: "text-purple-600",
+    bg: "bg-purple-50",
     description: "Look & feel amazing",
   },
 ];
@@ -52,10 +58,21 @@ export default function CategorySection() {
           <Link
             key={cat.name}
             href={cat.href}
-            className={`${cat.bg} rounded-2xl p-6 flex flex-col items-center text-center hover:scale-90 transition-transform duration-200 shadow-sm`}>
-            <span className="text-5xl mb-3">{cat.emoji}</span>
+            className={`${cat.bg} rounded-2xl overflow-hidden flex flex-col transition-transform duration-200 shadow-sm`}>
+              {/* category Image */}
+              <div className="w-full h-56 overflow-hidden relative">
+              <ProductImage
+              src={cat.image}
+              alt={cat.name}
+              emoji={cat.emoji}
+              fill={true}
+              className="h-full w-full" />
+             </div>
+             {/* category Info */}
+            <div className="p-4 text-center">
             <h3 className={`font-bold text-lg ${cat.text}`}>{cat.name}</h3>
             <p className="text-gray-500 text-sm mt-1">{cat.description}</p>
+            </div>
           </Link>
         ))}
       </div>

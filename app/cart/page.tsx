@@ -2,6 +2,7 @@
  import { useCartStore } from "@/store/cartStore";
  import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
  import Link from "next/link";
+ import ProductImage from "@/components/ui/ProductImage";
 
  function formatPrice(price: number) {
   return new Intl.NumberFormat("en-NG", {
@@ -35,7 +36,7 @@
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-11">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Your Cart</h1>
@@ -55,8 +56,13 @@
               key={product.id}
               className="bg-white rounded-2xl shadow-sm p-4 flex gap-4 items-center">
               {/* Product Image */}
-              <div className="bg-gray-100 rounded-xl w-20 h-20 flex items-center justify-center text-4xl shrink-0">
-                {product.emoji}
+              <div className="bg-gray-100 rounded-xl w-20 h-20 overflow-hidden relative shrink-0">
+                <ProductImage
+                src={product.image}
+                alt={product.name}
+                emoji={product.emoji}
+                fill={true}
+                className="h-full w-full" />
               </div>
 
               {/* Product Details */}
@@ -76,8 +82,7 @@
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => updateQuantity(product.id, quantity - 1)}
-                  className="w-8 h-8 rounded-full border-2 border-gray-200 flex items-center justify-center hover:border-orange-500 hover:text-orange-500 transition"
-                >
+                  className="w-8 h-8 rounded-full border-2 border-gray-200 flex items-center justify-center hover:border-orange-500 hover:text-orange-500 transition">
                   <Minus size={14} />
                 </button>
                 <span className="w-6 text-center font-semibold text-gray-800">
@@ -85,8 +90,7 @@
                 </span>
                 <button
                   onClick={() => updateQuantity(product.id, quantity + 1)}
-                  className="w-8 h-8 rounded-full border-2 border-gray-200 flex items-center justify-center hover:border-orange-500 hover:text-orange-500 transition"
-                >
+                  className="w-8 h-8 rounded-full border-2 border-gray-200 flex items-center justify-center hover:border-orange-500 hover:text-orange-500 transition">
                   <Plus size={14} />
                 </button>
               </div>
@@ -143,8 +147,7 @@
             {/* Checkout Button */}
             <Link
               href="/checkout"
-              className="block w-full bg-orange-500 text-white text-center py-3 rounded-full font-semibold hover:bg-orange-600 transition mt-2"
-            >
+              className="block w-full bg-orange-500 text-white text-center py-3 rounded-full font-semibold hover:bg-orange-600 transition mt-2" >
               Proceed to Checkout
             </Link>
 

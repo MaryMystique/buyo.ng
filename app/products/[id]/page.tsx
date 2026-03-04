@@ -4,6 +4,7 @@
  import { products } from "@/lib/products";
  import { ShoppingCart, ArrowLeft, Star, Minus, Plus } from "lucide-react";
  import { useCartStore } from "@/store/cartStore";
+ import ProductImage from "@/components/ui/ProductImage"
 
  // Price formatter - same one we've been using
  function formatPrice(price: number) {
@@ -48,7 +49,7 @@
     setQuantity((prev) => Math.min(product.stock, prev + 1));
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-11">
       {/* Back Button */}
       <button
         onClick={() => router.back()}
@@ -61,8 +62,13 @@
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
         {/* LEFT — Product Image */}
-        <div className="bg-gray-100 rounded-3xl flex items-center justify-center h-80 md:h-112.5 text-9xl shadow-inner">
-          {product.emoji}
+        <div className="bg-gray-100 rounded-3xl h-80 md:h-112.5 text-9xl shadow-inner">
+          <ProductImage
+           src={product.image}
+           alt={product.name}
+           emoji={product.emoji}
+           fill={true}
+           className="h-full w-full"/>
         </div>
 
         {/* RIGHT — Product Info */}
@@ -168,8 +174,13 @@
                 key={related.id}
                 onClick={() => router.push(`/products/${related.id}`)}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden text-left group">
-                <div className="bg-gray-100 h-36 flex items-center justify-center text-5xl group-hover:bg-gray-200 transition-colors">
-                  {related.emoji}
+                <div className="bg-gray-100 h-36 overflow-hidden relative group-hover:bg-gray-200 transition-colors">
+                <ProductImage
+                 src={related.image}
+                 alt={related.name}
+                 emoji={related.emoji}
+                 fill={true}
+                 className="h-full w-full"/>
                 </div>
                 <div className="p-3">
                   <p className="text-sm font-semibold text-gray-800 leading-tight">

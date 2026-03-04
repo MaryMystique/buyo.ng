@@ -3,6 +3,7 @@
  import { ShoppingCart, Star } from "lucide-react";
  import { Product } from "@/types";
  import { useCartStore } from "@/store/cartStore";
+ import ProductImage from "../ui/ProductImage";
 
  // telling TypeScript this component expects a Product object as a prop
  interface ProductCardProps {
@@ -24,8 +25,13 @@
       
       {/* Image Area */}
       <Link href={`/products/${product.id}`}>
-        <div className="bg-gray-100 h-52 flex items-center justify-center text-6xl group-hover:bg-gray-200 transition-colors cursor-pointer">
-          {product.emoji}
+        <div className="bg-gray-100 h-52 overflow-hidden group-hover:bg-gray-200 transition-colors cursor-pointer relative">
+          <ProductImage
+            src={product.image}
+            alt={product.name}
+            emoji={product.emoji}
+            fill={true}
+            className="h-full w-full"/>
         </div>
       </Link>
 

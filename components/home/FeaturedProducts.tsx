@@ -1,5 +1,7 @@
  import Link from "next/link";
+ import Image from "next/image";
  import { ShoppingCart } from "lucide-react";
+ import ProductImage from "@/components/ui/ProductImage";
 
  // Dummy products - we'll replace with real Firebase data later
   const products = [
@@ -8,6 +10,7 @@
     name: "Floral Summer Dress",
     price: 12500,
     category: "Clothing",
+    image: "/products/dress2.jpg",
     emoji: "👗",
     rating: 4.5,
     reviews: 24,
@@ -17,6 +20,7 @@
     name: "Standing Blender",
     price: 35000,
     category: "Appliances",
+    image: "/products/blend1.jpg",
     emoji: "🥤",
     rating: 4.8,
     reviews: 56,
@@ -26,6 +30,7 @@
     name: "Non-stick Frying Pan",
     price: 8500,
     category: "Kitchen",
+    image: "/products/pan2.jpg",
     emoji: "🍳",
     rating: 4.3,
     reviews: 18,
@@ -35,6 +40,7 @@
     name: "Glow Serum Set",
     price: 15000,
     category: "Cosmetics",
+    image: "/products/glow2.jpg",
     emoji: "✨",
     rating: 4.9,
     reviews: 102,
@@ -44,6 +50,7 @@
     name: "Men's Casual Polo",
     price: 7500,
     category: "Clothing",
+    image: "/products/men2.jpg",
     emoji: "👕",
     rating: 4.2,
     reviews: 31,
@@ -53,6 +60,7 @@
     name: "Air Fryer 5L",
     price: 65000,
     category: "Appliances",
+    image: "/products/air1.jpg",
     emoji: "🍟",
     rating: 4.7,
     reviews: 89,
@@ -62,6 +70,7 @@
     name: "Matte Red Lipstick",
     price: 6500,
     category: "cosmetics",
+    image: "/products/lip2.jpg",
     emoji: "💄",
     rating: 4.8,
     review: 78,
@@ -71,6 +80,7 @@
     name: "Knife Set (6 piece)",
     price: 18000,
     category: "kitchen",
+    image: "/products/kk2.jpg",
     emoji: "🔪",
     rating: 4.6,
     reviews: 37,
@@ -128,9 +138,14 @@
               key={product.id}
               className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group">
               {/* Product Image Placeholder */}
-              <div className="bg-gray-100 h-48 flex items-center justify-center text-6xl group-hover:bg-gray-200 transition-colors">
-                {product.emoji}
-              </div>
+              <div className="bg-gray-100 h-48 overflow-hidden relative group-hover:bg-gray-200 transition-colors">
+             <ProductImage
+              src={product.image}
+              alt={product.name}
+              emoji={product.emoji}
+              fill={true}
+              className="h-full w-full"/>
+            </div>
 
               {/* Product Info */}
               <div className="p-4">

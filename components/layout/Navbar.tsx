@@ -1,13 +1,22 @@
-"use client";
-import Link from "next/link";
-import { useState } from "react";
-import { ShoppingCart, Search, Menu, X, User } from "lucide-react";
-import { useCartStore } from "@/store/cartStore";
+ "use client";
+ import Link from "next/link";
+ import { useState } from "react";
+ import { ShoppingCart, Search, Menu, X, User } from "lucide-react";
+ import { useCartStore } from "@/store/cartStore";
+ import { useAuthStore } from "@/store/authStore";
+ import { signOut } from "firebase/auth";
+ import { auth } from "@/lib/firebase";
+ 
 
-export default function Navbar() {
+ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const totalItems = useCartStore((state) => state.getTotalItems());
+  const { user } = useAuthStore();
+
+  async function handleLogout() {
+    await signOut(auth);
+  }
 
   const categories = [
     { name: "Clothing", href: "/products?category=clothing" },
@@ -17,14 +26,14 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-white shadow-md h-20 sticky top-0 z-50">
       {/* TOP BAR */}
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
         
         {/* LOGO */}
         <Link href="/" className="text-2xl font-bold text-orange-500 shrink-0">
           Buyo
-          {/* <span className="text-black">.ng</span> */}
+          <span className="text-black">.ng</span>
         </Link>
 
         {/* SEARCH BAR - hidden on mobile */}
@@ -43,12 +52,25 @@ export default function Navbar() {
         {/* RIGHT ICONS */}
         <div className="flex items-center gap-4">
           {/* Account */}
+          {user ? ( 
+            <div className="hidden md:flex items-center gap-3">
+              <span className="text-sm text-gray-700 font-medium">
+                Hi, {user.displayName?.split(" ")[0] || "User"}
+              </span>
+           <button
+           onClick={handleLogout}
+           className="text-sm text-red-400 hover:text-red-600 transition font-medium">
+            Logout
+           </button>
+           </div>
+          ) : (
           <Link
             href="/auth"
             className="hidden md:flex items-center gap-1 text-sm text-gray-700 hover:text-orange-500 transition">
             <User size={20} />
             <span>Account</span>
           </Link>
+          )}
 
           {/* Cart */}
           <Link href="/cart" className="relative flex items-center text-gray-700 hover:text-orange-500 transition">
@@ -69,13 +91,13 @@ export default function Navbar() {
       </div>
 
       {/* CATEGORY NAV - desktop */}
-      <div className="hidden md:flex bg-orange-500">
+      <div className="hidden md:flex bg-orange-500 h-15">
         <div className="max-w-7xl mx-auto px-4 flex gap-6">
           {categories.map((cat) => (
             <Link
               key={cat.name}
               href={cat.href}
-              className="text-white text-sm font-medium py-2 hover:bg-orange-600 px-3 transition" >
+              className="text-white text-1xl font-medium py-2 hover:bg-orange-600 px-3 transition" >
               {cat.name}
             </Link>
           ))}
