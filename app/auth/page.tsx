@@ -1,5 +1,5 @@
  "use client";
- import { useState } from "react";
+ import { useEffect, useState } from "react";
  import { useRouter } from "next/navigation";
  import {
   createUserWithEmailAndPassword,
@@ -9,26 +9,37 @@
  } from "firebase/auth";
  import { auth, googleProvider } from "@/lib/firebase";
  import { useAuthStore } from "@/store/authStore";
- import { FaEye, FaEyeSlash } from "react-icons/fa";
  import { Eye, EyeOff } from "lucide-react";
 
  export default function AuthPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
-
-  // If already logged in, redirect to homepage
-  if (user) {
-    router.push("/");
-    return null;
-  }
+  const { user, loading } = useAuthStore();
 
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => { 
+  if (!loading && user) {
+    router.push("/");
+    }
+  }, [user, loading, router]);
+
+  // Show loading spinner while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Don't render form if already logged in
+  if (user) return null;
 
   // Format Firebase error messages to be user friendly
   function getErrorMessage(code: string) {
@@ -52,19 +63,14 @@
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setLoading(true);
+    setFormLoading(true);
 
     try {
       if (isLogin) {
-        // Login existing user
         await signInWithEmailAndPassword(auth, email, password);
       } else {
         // Register new user
-        const result = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+        const result = await createUserWithEmailAndPassword(auth, email, password);
         // Save their name to their profile
         await updateProfile(result.user, { displayName: name });
       }
@@ -72,21 +78,21 @@
     } catch (err: any) {
       setError(getErrorMessage(err.code));
     } finally {
-      setLoading(false);
+      setFormLoading(false);
     }
   }
 
   // Handle Google Login
   async function handleGoogleLogin() {
     setError("");
-    setLoading(true);
+    setFormLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
       router.push("/");
     } catch (err: any) {
       setError(getErrorMessage(err.code));
     } finally {
-      setLoading(false);
+      setFormLoading(false);
     }
   }
 
@@ -133,7 +139,6 @@
         {/* Form */}
         <div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Name field - only on Register */}
           {!isLogin && (
             <div className="relative">
             <input
@@ -142,8 +147,7 @@
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full border-2 border-gray-200 bg-white rounded-xl px-4 py-3 text-sm outline-none focus:border-orange-500 transition-colors"
-            />
+              className="w-full border-2 border-gray-200 bg-white rounded-xl px-4 py-3 text-sm outline-none focus:border-orange-500 transition-colors" />
             </div>
           )}
 
@@ -175,9 +179,9 @@
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={formLoading}
             className="bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition-all">
-            {loading ? "Please wait..." : isLogin ? "Login" : "Create Account"}
+            {formLoading ? "Please wait..." : isLogin ? "Login" : "Create Account"}
           </button>
         </form>
         </div>
@@ -192,7 +196,7 @@
         {/* Google Login */}
         <button
           onClick={handleGoogleLogin}
-          disabled={loading}
+          disabled={formLoading}
           className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 py-3 rounded-full text-sm font-semibold text-gray-700 hover:border-orange-500 hover:text-orange-500 transition-all">
           <span className="text-xl">🇬</span>
           Continue with Google
