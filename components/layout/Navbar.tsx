@@ -65,7 +65,7 @@
            </div>
           ) : (
           <Link
-            href="/auth"
+            href={user ? "/account" : "/auth"}
             className="hidden md:flex items-center gap-1 text-sm text-gray-700 hover:text-orange-500 transition">
             <User size={20} />
             <span>Account</span>

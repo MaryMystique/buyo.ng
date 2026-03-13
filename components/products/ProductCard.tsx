@@ -4,6 +4,7 @@
  import { Product } from "@/types";
  import { useCartStore } from "@/store/cartStore";
  import ProductImage from "../ui/ProductImage";
+ import toast from "react-hot-toast";
 
  // telling TypeScript this component expects a Product object as a prop
  interface ProductCardProps {
@@ -81,7 +82,9 @@
           </span>
           <button
             className="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 active:scale-95 transition-all"
-            onClick={() => addItem(product, 1)}>
+            onClick={() => {addItem(product, 1)
+               toast.success(`${product.name} added to cart!`)
+            }}>
             <ShoppingCart size={16} />
           </button>
         </div>

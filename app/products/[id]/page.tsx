@@ -4,7 +4,8 @@
  import { products } from "@/lib/products";
  import { ShoppingCart, ArrowLeft, Star, Minus, Plus } from "lucide-react";
  import { useCartStore } from "@/store/cartStore";
- import ProductImage from "@/components/ui/ProductImage"
+ import ProductImage from "@/components/ui/ProductImage";
+ import toast from "react-hot-toast";
 
  // Price formatter - same one we've been using
  function formatPrice(price: number) {
@@ -145,7 +146,11 @@
           {/* Action Buttons */}
           <div className="flex gap-3 mt-6">
             <button
-              onClick={() => addItem(product, quantity)}
+              onClick={() => { addItem(product, quantity)
+                toast.success(quantity > 1
+               ? `${quantity}x ${product.name} added to cart!`
+               : `${product.name} added to cart!`)
+              }}
               className="flex-1 flex items-center justify-center gap-2 bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 active:scale-95 transition-all" >
               <ShoppingCart size={20} />
               Add to Cart

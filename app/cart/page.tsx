@@ -3,6 +3,7 @@
  import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
  import Link from "next/link";
  import ProductImage from "@/components/ui/ProductImage";
+ import toast from "react-hot-toast";
 
  function formatPrice(price: number) {
   return new Intl.NumberFormat("en-NG", {
@@ -41,7 +42,9 @@
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Your Cart</h1>
         <button
-          onClick={clearCart}
+          onClick={() => {clearCart()
+            toast.success("Cart cleared")
+          }}
           className="text-sm text-red-400 hover:text-red-600 transition font-medium">
           Clear Cart
         </button>
@@ -101,7 +104,9 @@
                   {formatPrice(product.price * quantity)}
                 </p>
                 <button
-                  onClick={() => removeItem(product.id)}
+                  onClick={() => { removeItem(product.id)
+                    toast.success("Item removed")
+                  }}
                   className="text-red-400 hover:text-red-600 transition mt-2">
                   <Trash2 size={16} />
                 </button>
