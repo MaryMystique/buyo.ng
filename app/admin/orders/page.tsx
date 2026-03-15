@@ -1,16 +1,10 @@
  "use client";
- import { useState } from "react";
+ import { useState, useEffect } from "react";
  import AdminGuard from "@/components/admin/AdminGuard";
  import AdminSidebar from "@/components/admin/AdminSidebar";
-
- const allOrders = [
-  { id: "ORD001", customer: "Amaka Johnson", email: "amaka@gmail.com", items: 3, total: 45000, status: "delivered", date: "2026-03-01" },
-  { id: "ORD002", customer: "Chidi Okonkwo", email: "chidi@gmail.com", items: 1, total: 65000, status: "processing", date: "2026-03-02" },
-  { id: "ORD003", customer: "Ngozi Adeyemi", email: "ngozi@gmail.com", items: 2, total: 21000, status: "shipped", date: "2026-03-02" },
-  { id: "ORD004", customer: "Emeka Eze", email: "emeka@gmail.com", items: 4, total: 87500, status: "delivered", date: "2026-03-03" },
-  { id: "ORD005", customer: "Fatima Bello", email: "fatima@gmail.com", items: 1, total: 15000, status: "processing", date: "2026-03-03" },
-  { id: "ORD006", customer: "Tunde Williams", email: "tunde@gmail.com", items: 2, total: 32000, status: "cancelled", date: "2026-03-03" },
-];
+ import { getAllOrders, updateOrderStatus } from "@/lib/firestore";
+ import { Order } from "@/types";
+ import toast from "react-hot-toast";
 
  function formatPrice(price: number) {
   return new Intl.NumberFormat("en-NG", {
@@ -28,17 +22,28 @@
 };
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState(allOrders);
-  const [filter, setFilter] = useState("all");
+  const [orders, setOrders] = useState<Order[]>([]);
+ const [ordersLoading, setOrdersLoading] = useState(true);
+ const [filter, setFilter] = useState("all");
+
+ useEffect(() => {
+  async function fetchOrders() {
+    const data = await getAllOrders();
+    setOrders(data);
+    setOrdersLoading(false);
+  }
+  fetchOrders();
+ }, []);
 
   const filtered = filter === "all"
     ? orders
     : orders.filter((o) => o.status === filter);
 
-  function updateStatus(id: string, newStatus: string) {
+  async function handleStatusUpdate(id: string, newStatus: string) {
+    await updateOrderStatus(id, newStatus as Order["status"]);
     setOrders((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, status: newStatus } : o))
-    );
+      prev.map((o) => o.id === id ? { ...o, status: newStatus as Order["status"] } : o));
+    toast.success("order status updated!");
   }
 
   return (
@@ -71,7 +76,23 @@ export default function AdminOrdersPage() {
             ))}
           </div>
 
-          {/* Orders Table */}
+          {/* Loading State */}
+          {ordersLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm p-16 text-center">
+              <p className="text-5xl mb-4">📦</p>
+              <h3 className="text-xl font-semibold text-gray-700">
+                No orders yet
+              </h3>
+              <p className="text-gray-400 mt-2 text-sm">
+                Orders will appear here once customers start purchasing.
+              </p>
+            </div>
+          ) : (
+          // Order Table
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -87,29 +108,45 @@ export default function AdminOrdersPage() {
                 <tbody>
                   {filtered.map((order) => (
                     <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      {/* Order ID */}
                       <td className="py-3 px-4 font-mono text-orange-500 font-medium">
-                        {order.id}
+                        #{order.id.slice(0, 8).toUpperCase()}
                       </td>
+                      {/* Customer */}
                       <td className="py-3 px-4">
-                        <p className="font-medium text-gray-800">{order.customer}</p>
-                        <p className="text-xs text-gray-400">{order.email}</p>
+                        <p className="font-medium text-gray-800">{order.userName}</p>
+                        <p className="text-xs text-gray-400">{order.userEmail}</p>
                       </td>
+                      {/* Items */}
                       <td className="py-3 px-4 text-gray-500">
-                        {order.items} item{order.items > 1 ? "s" : ""}
+                        {order.items.length} item{order.items.length > 1 ? "s" : ""}
                       </td>
+                      {/* Total */}
                       <td className="py-3 px-4 font-bold text-gray-800">
                         {formatPrice(order.total)}
                       </td>
+                      {/* Status badge */}
                       <td className="py-3 px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusStyles[order.status]}`}>
                           {order.status}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-gray-400">{order.date}</td>
+                      {/* Date */}
+                      <td className="py-3 px-4 text-gray-400 text-xs">{order.createdAt
+                        ? new Date(
+                          (order.createdAt as any).seconds * 1000
+                        ).toLocaleDateString("en-NG", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })
+                        : "just now"}
+                        </td>
+                        {/* Status Update */}
                       <td className="py-3 px-4">
                         <select
                           value={order.status}
-                          onChange={(e) => updateStatus(order.id, e.target.value)}
+                          onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
                           className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-orange-500 transition bg-white"
                         >
                           <option value="processing">Processing</option>
@@ -124,7 +161,7 @@ export default function AdminOrdersPage() {
               </table>
             </div>
           </div>
-
+          )}
         </main>
       </div>
     </AdminGuard>

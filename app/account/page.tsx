@@ -20,19 +20,6 @@ import {
 import { getUserOrders } from "@/lib/firestore";
 import { Order } from "@/types";
 
-const [orders, setOrders] = useState<Order[]>([]);
-const [ordersLoading, setOrdersLoading] = useState(true);
-
-useEffect(() => {
-  async function fetchOrders() {
-    if (!user) return;
-    setOrdersLoading(true);
-    const userOrders = await getUserOrders(user.uid);
-    setOrders(userOrders);
-    setOrdersLoading(false);
-  }
-  fetchOrders();
-}, [user]);
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("en-NG", {
@@ -53,13 +40,15 @@ export default function AccountPage() {
   const router = useRouter();
   const { user, loading } = useAuthStore();
 
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState("");
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<"orders" | "settings">("orders");
 
-  // Redirect if not logged in
+   // Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
       router.push("/auth");
@@ -72,6 +61,17 @@ export default function AccountPage() {
       setNewName(user.displayName);
     }
   }, [user]);
+ 
+ useEffect(() => {
+  async function fetchOrders() {
+    if (!user) return;
+    setOrdersLoading(true);
+    const userOrders = await getUserOrders(user.uid);
+    setOrders(userOrders);
+    setOrdersLoading(false);
+  }
+  fetchOrders();
+}, [user]);
 
   // Loading state
   if (loading) {
@@ -238,35 +238,52 @@ export default function AccountPage() {
                 Order History
               </h2>
 
-              {orders.length === 0 ? (
+              {ordersLoading ? (
+                /* Loading skeletons */
+                <div className="flex flex-col gap-3">
+                  {[1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="bg-white rounded-2xl h-32 animate-pulse shadow-sm"
+                    />
+                  ))}
+                </div>
+              ) : orders.length === 0 ? (
+                /* Empty state */
                 <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
-                  <Package size={48} className="text-gray-200 mx-auto mb-3" />
-                  <p className="text-gray-500">No orders yet</p>
+                  <Package
+                    size={48}
+                    className="text-gray-200 mx-auto mb-3" />
+             <p className="text-gray-500">No orders yet</p>
                   <Link
                     href="/products"
-                    className="mt-4 inline-block bg-orange-500 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-orange-600 transition"
-                  >
+                    className="mt-4 inline-block bg-orange-500 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-orange-600 transition" >
                     Start Shopping
                   </Link>
                 </div>
               ) : (
+                /* Real orders */
                 orders.map((order) => (
                   <div
                     key={order.id}
-                    className="bg-white rounded-2xl shadow-sm p-5"
-                  >
+                    className="bg-white rounded-2xl shadow-sm p-5">
                     {/* Order Header */}
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <p className="font-mono text-orange-500 font-bold text-sm">
-                          {order.id}
+                          #{order.id.slice(0, 8).toUpperCase()}
                         </p>
                         <p className="text-xs text-gray-400 mt-0.5">
-                          {new Date(order.date).toLocaleDateString("en-NG", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
+                          {order.createdAt
+                            ? new Date(
+                                (order.createdAt as any).seconds *
+                                  1000
+                              ).toLocaleDateString("en-NG", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              })
+                            : "Recently placed"}
                         </p>
                       </div>
                       <span
@@ -288,14 +305,16 @@ export default function AccountPage() {
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-orange-300" />
                             <span className="text-gray-700">
-                              {item.name}
+                              {item.product.name}
                               <span className="text-gray-400 ml-1">
-                                x{item.qty}
+                                x{item.quantity}
                               </span>
                             </span>
                           </div>
                           <span className="text-gray-600 font-medium">
-                            {formatPrice(item.price * item.qty)}
+                            {formatPrice(
+                              item.product.price * item.quantity
+                            )}
                           </span>
                         </div>
                       ))}
