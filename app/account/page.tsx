@@ -17,39 +17,22 @@ import {
   ChevronRight,
   Shield,
 } from "lucide-react";
+import { getUserOrders } from "@/lib/firestore";
+import { Order } from "@/types";
 
-const Orders = [
-  {
-    id: "ORD001",
-    date: "2026-03-01",
-    total: 45000,
-    status: "delivered",
-    items: [
-      { name: "Floral Summer Dress", qty: 1, price: 12500 },
-      { name: "Glow Serum Set", qty: 2, price: 15000 },
-    ],
-  },
-  {
-    id: "ORD002",
-    date: "2026-03-05",
-    total: 65000,
-    status: "processing",
-    items: [
-      { name: "Air Fryer 5L", qty: 1, price: 65000 },
-    ],
-  },
-  {
-    id: "ORD003",
-    date: "2026-03-08",
-    total: 21000,
-    status: "shipped",
-    items: [
-      { name: "Non-stick Frying Pan", qty: 1, price: 8500 },
-      { name: "Wooden Cutting Board", qty: 1, price: 4500 },
-      { name: "Matte Lipstick", qty: 1, price: 6500 },
-    ],
-  },
-];
+const [orders, setOrders] = useState<Order[]>([]);
+const [ordersLoading, setOrdersLoading] = useState(true);
+
+useEffect(() => {
+  async function fetchOrders() {
+    if (!user) return;
+    setOrdersLoading(true);
+    const userOrders = await getUserOrders(user.uid);
+    setOrders(userOrders);
+    setOrdersLoading(false);
+  }
+  fetchOrders();
+}, [user]);
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("en-NG", {
@@ -178,21 +161,21 @@ export default function AccountPage() {
             <div className="flex gap-4 mt-5 pt-5 border-t border-gray-100 w-full justify-center">
               <div className="text-center">
                 <p className="text-2xl font-bold text-orange-500">
-                  {Orders.length}
+                  {orders.length}
                 </p>
                 <p className="text-xs text-gray-500">Orders</p>
               </div>
               <div className="w-px bg-gray-100" />
               <div className="text-center">
                 <p className="text-2xl font-bold text-orange-500">
-                  {Orders.filter((o) => o.status === "delivered").length}
+                  {orders.filter((o) => o.status === "delivered").length}
                 </p>
                 <p className="text-xs text-gray-500">Delivered</p>
               </div>
               <div className="w-px bg-gray-100" />
               <div className="text-center">
                 <p className="text-2xl font-bold text-orange-500">
-                  {Orders.filter((o) => o.status === "processing").length}
+                  {orders.filter((o) => o.status === "processing").length}
                 </p>
                 <p className="text-xs text-gray-500">Pending</p>
               </div>
@@ -255,7 +238,7 @@ export default function AccountPage() {
                 Order History
               </h2>
 
-              {Orders.length === 0 ? (
+              {orders.length === 0 ? (
                 <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
                   <Package size={48} className="text-gray-200 mx-auto mb-3" />
                   <p className="text-gray-500">No orders yet</p>
@@ -267,7 +250,7 @@ export default function AccountPage() {
                   </Link>
                 </div>
               ) : (
-                Orders.map((order) => (
+                orders.map((order) => (
                   <div
                     key={order.id}
                     className="bg-white rounded-2xl shadow-sm p-5"

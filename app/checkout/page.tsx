@@ -7,6 +7,8 @@
  import { ShoppingBag, MapPin, Phone, User, ArrowLeft } from "lucide-react";
  import Link from "next/link";
  import ProductImage from "@/components/ui/ProductImage";
+ import { createOrder } from "@/lib/firestore";
+ import toast from "react-hot-toast";
 
  function formatPrice(price: number) {
   return new Intl.NumberFormat("en-NG", {
@@ -59,10 +61,37 @@
   };
 
   // What happens when payment succeeds
-  const onPaymentSuccess = (reference: any) => {
-    console.log("Payment successful!", reference);
+  const onPaymentSuccess = async (reference: any) => {
+    const toastId = toast.loading("Saving your order...");
+
+    const result = await createOrder({
+    userId: user?.uid || "guest",
+    userEmail: form.email,
+    userName: form.fullName,
+    items: items,
+    total: getTotalPrice(),
+    paymentReference: reference.reference,
+    deliveryInfo: {
+      fullName: form.fullName,
+      email: form.email,
+      phone: form.phone,
+      address: form.address,
+      city: form.city,
+      state: form.state,
+    },
+  });
+
+  if (result.success) {
+    toast.success("Order placed successfully!", { id: toastId });
+    clearCart();
+    router.push(`/order-success?orderId=${result.orderId}`);
+  } else {
+    toast.error("Order saved locally. Contact support if needed.", {
+      id: toastId,
+    });
     clearCart();
     router.push("/order-success");
+  }
   };
 
   // What happens when user closes payment modal

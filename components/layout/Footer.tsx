@@ -188,7 +188,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Buyo.ng. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <span>Made with ❤️ in Nigeria</span>
+            <span>Licensed in Nigeria</span>
             <span className="flex items-center gap-1">
               Secured by
               <span className="text-orange-500 font-semibold ml-1">

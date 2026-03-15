@@ -17,4 +17,24 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface Order {
+  id: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  items: CartItem[];
+  total: number;
+  status: "processing" | "shipped" | "delivered" | "cancelled";
+  paymentReference: string;
+  deliveryInfo: {
+    fullName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+  };
+  createdAt: Date;
+}
+
 export type Category = "all" | "clothing" | "appliances" | "kitchen" | "cosmetics";

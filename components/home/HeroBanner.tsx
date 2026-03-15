@@ -15,7 +15,7 @@ const slides = [
     overlay: "bg-black/50",
   },
   {
-    image: "/hero/h9.jpg",
+    image: "/hero/h0.jpg",
     badge: "Top Picks 🔥",
     heading: "Style That",
     highlight: "Speaks Volumes",
@@ -24,7 +24,7 @@ const slides = [
     overlay: "bg-black/40",
   },
   {
-    image: "/hero/h8.jpg",
+    image: "/hero/app.jpg",
     badge: "Best Deals 💥",
     heading: "Equip Your",
     highlight: "Home & Kitchen",
