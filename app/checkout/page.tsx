@@ -3,8 +3,8 @@
  import { useRouter } from "next/navigation";
  import { useCartStore } from "@/store/cartStore";
  import { useAuthStore } from "@/store/authStore";
- import { usePaystackPayment } from "react-paystack";
- import { ShoppingBag, MapPin, Phone, User, ArrowLeft } from "lucide-react";
+ import dynamic from "next/dynamic";
+ import { ShoppingBag, MapPin, Phone, User, ArrowLeft, Currency } from "lucide-react";
  import Link from "next/link";
  import ProductImage from "@/components/ui/ProductImage";
  import { createOrder } from "@/lib/firestore";
@@ -51,59 +51,45 @@
     );
   }
 
-  // Paystack config
-  const paystackConfig = {
-    reference: `buyo_${Date.now()}`,
-    email: form.email,
-    amount: getTotalPrice() * 100, // Paystack uses kobo (multiply by 100)
-    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
-    currency: "NGN",
-  };
+  // Handle form input changes
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
 
-  // What happens when payment succeeds
-  const onPaymentSuccess = async (reference: any) => {
-    const toastId = toast.loading("Saving your order...");
+  // separate async function for saving order after payment
+    async function handlePaymentSuccess(response: any) {
+     const toastId = toast.loading("Saving your order...");
 
-    const result = await createOrder({
-    userId: user?.uid || "guest",
-    userEmail: form.email,
-    userName: form.fullName,
-    items: items,
-    total: getTotalPrice(),
-    paymentReference: reference.reference,
-    deliveryInfo: {
-      fullName: form.fullName,
-      email: form.email,
-      phone: form.phone,
-      address: form.address,
-      city: form.city,
-      state: form.state,
+     const result = await createOrder({
+       userId: user?.uid || "guest",
+       userEmail: form.email,
+       userName: form.fullName,
+       items: items,
+       total: getTotalPrice(),
+       paymentReference: response.reference,
+       deliveryInfo: {
+       fullName: form.fullName,
+       email: form.email,
+       phone: form.phone,
+       address: form.address,
+       city: form.city,
+       state: form.state,
     },
   });
+
+  setLoading(false);
 
   if (result.success) {
     toast.success("Order placed successfully!", { id: toastId });
     clearCart();
     router.push(`/order-success?orderId=${result.orderId}`);
   } else {
-    toast.error("Order saved locally. Contact support if needed.", {
-      id: toastId,
-    });
+    toast.error("Payment recieved but order failed. Contact support.", 
+      { id: toastId } 
+     );
     clearCart();
     router.push("/order-success");
   }
-  };
-
-  // What happens when user closes payment modal
-  const onPaymentClose = () => {
-    console.log("Payment cancelled");
-  };
-
-  const InitializePayment = usePaystackPayment(paystackConfig);
-
-  // Handle form input changes
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   // Validate form before payment
@@ -117,13 +103,40 @@
       alert("Please enter a valid Nigerian phone number.");
       return;
     }
-    // Launch Paystack payment popup
-    InitializePayment({
-      onSuccess: onPaymentSuccess,
-      onClose: onPaymentClose,
-    });
-  }
 
+    //  Check if Paystack script is loaded
+    if (!(window as any).PaystackPop) {
+      toast.error("Payment system is loading. Please try again in a moment.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+    const handler = (window as any).PaystackPop.setup({
+      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
+      email: form.email,
+      amount: getTotalPrice() * 100, // this converts to kobo
+      currency: "NGN",
+      ref: `buyo_${Date.now()}`,
+      onClose: () => {      // user can close payment popup without paying
+      setLoading(false);
+     toast.error("Payment cancelled.");  
+    },
+   
+    // Payment successful
+     callback: (response: any) => {
+      handlePaymentSuccess(response);
+     }
+     });
+     handler.openIframe();
+  } catch (error) {
+    setLoading(false);
+    toast.error("Something went wrong. Please try again.");
+    console.error("Paystack error:", error);
+  }
+  }
+   
   const nigerianStates = [
     "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa",
     "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti",
@@ -334,8 +347,7 @@
             <button
               onClick={handleProceedToPayment}
               disabled={loading}
-              className="w-full bg-orange-500 text-white py-4 rounded-full font-bold text-base hover:bg-orange-600 active:scale-95 transition-all mt-6 disabled:opacity-50"
-            >
+              className="w-full bg-orange-500 text-white py-4 rounded-full font-bold text-base hover:bg-orange-600 active:scale-95 transition-all mt-6 disabled:opacity-50">
               Pay {formatPrice(getTotalPrice())}
             </button>
 
