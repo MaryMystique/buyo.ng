@@ -96,11 +96,11 @@
   function handleProceedToPayment() {
     const { fullName, email, phone, address, city, state } = form;
     if (!fullName || !email || !phone || !address || !city || !state) {
-      alert("Please fill in all delivery details before proceeding.");
+      toast.error("Please fill in all delivery details before proceeding.");
       return;
     }
     if (phone.length < 11) {
-      alert("Please enter a valid Nigerian phone number.");
+      toast.error("Please enter a valid Nigerian phone number.");
       return;
     }
 
@@ -112,29 +112,47 @@
 
     setLoading(true);
 
-    try {
-    const handler = (window as any).PaystackPop.setup({
+    const paymentRef = `buyo_${Date.now()}`;
+
+    // store order in a localStorage before popup
+    const orderData = {
+      userId: user?.uid || "guest", 
+      userEmail: form.email,
+      userName: form.fullName,
+      items: items,
+      total: getTotalPrice(),
+      paymentReference: paymentRef,
+      deliveryInfo: {
+        fullName: form.fullName,
+        email: form.email,
+        phone: form.phone,
+        address: form.address,
+        city: form.city,
+        state: form.state,
+      },
+    };
+    
+    localStorage.setItem("Pending_order", JSON.stringify(orderData));
+
+    // use v2 popup API
+    const popup = new (window as any).PaystackPop();
+
+    popup.newTransaction({
       key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
       email: form.email,
       amount: getTotalPrice() * 100, // this converts to kobo
       currency: "NGN",
-      ref: `buyo_${Date.now()}`,
-      onClose: () => {      // user can close payment popup without paying
-      setLoading(false);
-     toast.error("Payment cancelled.");  
+      ref: paymentRef,
+      oncancel: function () {   
+       setLoading(false);
+       localStorage.removeItem("pending_order");
+       toast.error("Payment cancelled.");  
     },
-   
-    // Payment successful
-     callback: (response: any) => {
-      handlePaymentSuccess(response);
-     }
-     });
-     handler.openIframe();
-  } catch (error) {
-    setLoading(false);
-    toast.error("Something went wrong. Please try again.");
-    console.error("Paystack error:", error);
-  }
+    onSuccess: function (transaction: any) {
+      // Redirect to processing page
+      window.location.href = "/order-processing";
+    },
+  });
   }
    
   const nigerianStates = [
