@@ -104,3 +104,46 @@ export async function updateOrderStatus(
     return { success: false };
   }
 }
+
+export async function subscribeToNewsletter(email: string) {
+  try {
+    // Check if email already exists
+    const q = query(
+      collection(db, "newsletter"),
+      where("email", "==", email)
+    );
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      return { success: false, message: "already_subscribed" };
+    }
+
+    // Save new subscriber
+    await addDoc(collection(db, "newsletter"), {
+      email,
+      subscribedAt: serverTimestamp(),
+    });
+
+    return { success: true, message: "subscribed" };
+  } catch (error) {
+    console.error("Newsletter subscription error:", error);
+    return { success: false, message: "error" };
+  }
+}
+
+export async function getNewsletterSubscribers() {
+  try {
+    const q = query(
+      collection(db, "newsletter"),
+      orderBy("subscribedAt", "desc")
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("Error fetching subscribers:", error);
+    return [];
+  }
+}

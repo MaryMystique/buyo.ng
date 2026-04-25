@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import Link from "next/link";
 import {
   Mail,
@@ -7,6 +9,8 @@ import {
   Twitter,
   Facebook,
 } from "lucide-react";
+import { subscribeToNewsletter } from "@/lib/firestore";
+import toast from "react-hot-toast";
 
 const footerLinks = {
   shop: [
@@ -32,6 +36,44 @@ const footerLinks = {
 };
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [subLoading, setSubLoading] = useState(false);
+
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault();
+
+    if(!email.trim()) {
+      toast.error("Please enter your email address.");
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    setSubLoading(true);
+
+    try {
+      const result = await subscribeToNewsletter(email.trim());
+
+      if (result.message === "already_subscribed") {
+        toast.error("This email is already subscribed!");
+      } else if (result.success) {
+        toast.success("🎉 You're subscribed! Welcome to Buyo.ng");
+        setEmail(""); // clear input
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setSubLoading(false);
+    }
+  }
+    
   return (
     <footer className="bg-gray-900 text-gray-400 mt-16">
 
@@ -167,19 +209,31 @@ export default function Footer() {
                 Get the latest deals and new arrivals straight to your inbox.
               </p>
             </div>
-            <div className="flex w-full md:w-auto gap-2">
+
+            {/* Newsletter Form */}
+            <form
+              onSubmit={handleSubscribe}
+              className="flex w-full md:w-auto gap-2"
+            >
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 md:w-64 bg-gray-800 border border-gray-700 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none focus:border-orange-500 transition-colors"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={subLoading}
+                className="flex-1 md:w-64 bg-gray-800 border border-gray-700 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none focus:border-orange-500 transition-colors disabled:opacity-50"
               />
-              <button className="bg-orange-500 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-orange-600 transition-colors shrink-0">
-                Subscribe
+              <button
+                type="submit"
+                disabled={subLoading}
+                className="bg-orange-500 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-orange-600 transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {subLoading ? "..." : "Subscribe"}
               </button>
-            </div>
+            </form>
+           </div>
           </div>
         </div>
-      </div>
 
       {/* Bottom Bar */}
       <div className="border-t border-gray-800">

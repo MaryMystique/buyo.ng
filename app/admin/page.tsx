@@ -4,11 +4,13 @@ import { products } from "@/lib/products";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import StatsCard from "@/components/admin/StatsCard";
+import { getAllOrders, getNewsletterSubscribers } from "@/lib/firestore";
 import {
   Package,
   ShoppingBag,
   Users,
   TrendingUp,
+  Mail
 } from "lucide-react";
 
 const Orders = [
