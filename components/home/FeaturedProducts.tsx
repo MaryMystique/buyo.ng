@@ -1,7 +1,7 @@
  import Link from "next/link";
  import Image from "next/image";
- import { ShoppingCart } from "lucide-react";
  import ProductImage from "@/components/ui/ProductImage";
+ import AddToCartButton from "@/components/home/AddToCartButton";
 
  // Dummy products - we'll replace with real Firebase data later
   const products = [
@@ -163,9 +163,7 @@
                   <span className="font-bold text-gray-900">
                     {formatPrice(product.price)}
                   </span>
-                  <button className="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition">
-                    <ShoppingCart size={16} />
-                  </button>
+                  <AddToCartButton product={product} />
                 </div>
               </div>
             </div>
